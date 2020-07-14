@@ -1,0 +1,226 @@
+
+..............		COMANDOS IMPORTANTES REDES	..................
+
+
+Mostrar MAC address:
+	>> show interfaces	//no router
+	>> show switch		//no switch
+
+
+Mostrar redes definidas:
+	>> show ip route
+
+
+PINGs:
+	>> ping <ip-nome>
+	>> ping -s 2000 <ip>	// Ping com tamanho 2000
+
+
+Router:
+	>> enable
+	>> configure terminal
+	>> interface <nome da interface>
+	>> ip adress <nome-ip>
+	>> no shutdown
+	>> end
+	>> write
+
+
+Switchs:
+	>> config ipif System ipaddress <ip-nome>/máscara
+
+
+Defalut Gateway:
+	>> create iproute default <ip-nome>
+
+
+Mostrar tabela de encaminhamento:
+	>> show fdb (aging_time)?
+	>> config fdb aging_time 10	//configura um encaminhamento de 10s
+
+
+Mostrar tabela de ARP:
+	>> arp -n
+
+
+Traçar caminho:
+	>> tracepath -n <ip-server ou outro ip>
+
+
+VPCs:
+	>> <ip-pc + máscara> <ip-gateway>
+
+
+
+VLANs:
+	>> show vlan	//mostra as vlans
+	>> create vlan <nome vlan> tag 2	//cria uma vlan com rótulo 2
+	>> config vlan <vlan default> delelte 5-8	//apaga as portas de acesso da 5-8 da vlan default 
+	>> config vlan <nome vlan> add untagged 5-8 	//associa as portas 5-8 à nova vlan
+	
+
+
+Spanning-Tree	(Não vem para o projeto):
+	>> show vlan-switch
+	>> show spanning-tree vlan 1 
+	
+	>> configure terminal 
+	>> spanning-tree vlan 1 priority <value> 	//Alterear prioridade
+
+	>> configure terminal 
+	>> interface <interface> 
+	>> spanning-tree cost <valor>		//Alterar o custo
+
+	>> configure terminal 
+	>> spanning-tree vlan 1 hello-time <value> 
+
+	>> vlan database 
+	>> vlan 2 
+	>> apply 
+	>> exit 
+	>> configure terminal 
+	>> interface <nome> 
+	>> switchport mode trunk 
+	>> interface <nome> 
+	>> switchport mode trunk
+
+
+
+IPv4:
+	Router(config-if)# ip address <ip> 255.255.255.0
+	Router(config-if)# no shut
+
+
+
+IPv6:
+	>> sudo ifconfig eth0 up	//liga a rede
+	>> sudo ifconfig eth0 down	//desliga a rede	
+	
+	Router1(config)# ipv6 unicast-routing
+	Router1(config)# interface <nome-interface>
+	Router1(config-if)# ipv6 enable
+	Router1(config-if)# ipv6 address <nome-ip>/64
+	Router1(config-if)# no shutdown
+
+	>> show ipv6 interface		// verificar configuração interfaces no router
+	>> show ipv6 interface brief 
+	>> show ipv6 neighbors
+
+
+
+Configurar protocolo RIP:
+	>> enable
+	>> configure terminal
+	>> router rip
+	>> network 192.1.1.0
+	>> network 192.20.20.0
+
+	Router(config)# interface f0/0 
+	Router(config-if)# ip split-horizon 	//Ligar split-horizon 
+	Router(config-if)# no ip split-horizon 	//Desligar split-horizon 
+
+	Router(config)# router rip 
+	Router(config-router)#default-information originate 
+	
+
+
+
+Protocolo OSPF:
+	Router(config)# no router rip 	//Desativa o protocolo RIP
+
+	Router(config)# router ospf 1 	//Processo número 1 do OSPF 
+	Router(config-router)# network 192.10.10.0 0.0.0.255 area 0 
+	Router(config-router)# network 192.30.30.0 0.0.0.255 area 0 
+
+
+	>> show ip ospf interface
+
+	Router(config)#interface f0/0 
+	Router(config-if)#ip ospf cost <value>	//Altera o custo do OSPF
+
+
+
+
+Protocolo OSPFv3 (IPv6):
+	Router1(config)#ipv6 router ospf 1 
+	Router1(config-rtr)# router-id <n.n.n.n> ! Definição manual do OSPFv3 
+	Router ID Router1(config)# interface <if-name> 
+	Router1(config-if)# ipv6 ospf 1 area <area-number>
+
+
+	>> show ipv6 ospf 1 database 
+	>> show ipv6 ospf 1 database network 
+	>> show ipv6 ospf 1 database router 
+	>> show ipv6 ospf 1 database prefix !Nova base de dados OSPFv3
+
+	Router2(config)# ipv6 router ospf 1 
+	Router2(config-rtr)# default-information originate always 
+
+
+
+
+NAT:
+	Router (config)# ip nat pool MYNATPOOL 192.1.1.21 192.1.1.21 netmask 255.255.255.0 
+	Router 1(config)# access-list 2 permit 192.168.1.0 0.0.0.255 
+	
+	Definir Inside: Router (config)# interface f0/0 
+			Router (config-if)# ip nat inside
+		Outside: Router (config)#interface f0/1 
+			 Router (config-if)#ip nat outside
+
+
+
+
+NO PROJETO HÁ DOIS PARA FORA
+
+
+>> show ip data translation verbose 	//mostra a tradução feita e há quanto tempo foi feita e o tempo que continuará válida
+
+
+Numa ACL List, temos de configurar com um comando:
+	>> deny ip <nome-ip> <máscara ao contrário> any
+Ou seja rejeita tudo o que vem desse IP... Logo a seguir tem de vir um comando que permita o que venha desse IP, dái o comando:
+	>> permite ip any any
+
+
+
+
+NAT/PAT:
+	Router (config)#ip nat inside source list 2 pool MYNATPOOL overload
+
+	// Os computadores passam a conseguir comunicar entre eles
+
+
+
+
+IPsec Tunneling	(Não vem para o projeto):
+	Router2(config)# crypto isakmp policy 30					// The number defines the order of preference
+	Router2(config-isakmp)# authentication pre-share				// Auth. with password
+	Router2(config)# crypto isakmp key labcom address 11.11.#group.1  		// Passw. with Router1
+	Router2(config)# crypto ipsec transform-set authT ah-sha-hmac 			// AH
+	Router2(config)# crypto ipsec transform-set cipherT esp-des 			// ESP with DES
+	Router2(config)# crypto ipsec transform-set auth_ciphT ah-sha-hmac esp-des	// AH+ESP
+   	Router2(config)# crypto ipsec profile ARipsec					// Defines tunnel type/protocols
+	Router2(ipsec-profile)# set transform-set authT cipherT auth_ciphT		// Order def. prefs.
+	---
+   	Router2(config)# interface Tunnel 0 
+   	Router2(config-if)# ip unnumbered FastEthernet0/0 
+   	Router2(config-if)# tunnel source 11.11.#group.2 
+   	Router2(config-if)# tunnel destination 11.11.#group.1 
+   	Router2(config-if)# tunnel mode ipsec ipv4 
+   	Router2(config-if)# tunnel protection ipsec profile ARipsec
+   	Router2(config)# ip route 192.1.1.45 255.255.255.255 Tunnel 0			// Route to Linux server
+	
+
+	Router1(config)# interface Tunnel 0 
+   	Router1(config-if)# ip unnumbered FastEthernet0/0 
+   	Router1(config-if)# tunnel source 11.11.#group.1
+   	Router1(config-if)# tunnel destination 11.11.#group.2
+  	Router1(config-if)# tunnel mode ipsec ipv4 
+   	Router1(config-if)# tunnel protection ipsec profile ARipsec
+   	Router1(config)# ip route 10.#group.2.0 255.255.255.0 Tunnel 0			// Return route
+
+
+	Router2(config)# interface Tunnel0 			//Desativa o ipsec
+   	Router2(config-if)# shutdown
+
